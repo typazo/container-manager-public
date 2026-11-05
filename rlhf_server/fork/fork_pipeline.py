@@ -258,7 +258,7 @@ class ForkPipeline:
             commit_result = None
             for attempt in range(MAX_RETRIES):
                 commit_result = subprocess.run(
-                    ['docker', 'commit',  '--no-pause', container_name, f'{new_container_name}'],
+                    ['docker', 'commit', '--pause=false', container_name, f'{new_container_name}'],
                     capture_output=True, text=True
                 )
 
@@ -360,7 +360,10 @@ class ForkPipeline:
         print(f'Committing {fork_request.id} 3.2 after getting it from queue')
 
         if commit_error:
-            return f"Failed to commit containers: {commit_error.stderr}"
+            fork_request.error = f"Failed to commit containers: {commit_error.stderr}"
+            fork_request.commit_complete = True
+            fork_request.fork_complete = True
+            return fork_request.error
         
         print(f'Committing {fork_request.id} 4 after getting it from queue')
         new_task_dir = self.create_forked_task_dir(image_names, task_name, terminal_id)
@@ -476,13 +479,16 @@ class ForkPipeline:
             self.commit_queue.appendleft(fork_req)
         
         prev_logged = 0
-        while not fork_req.fork_complete:
+        while not fork_req.fork_complete and not fork_req.error:
             
             if time.perf_counter() - prev_logged > 2:
                 print(f'Waiting for {fork_req.id} fork to complete')
                 prev_logged = time.perf_counter()
                 
             time.sleep(WAIT_TIME_OUT)
+
+        if fork_req.error:
+            raise RuntimeError(fork_req.error)
         
         assert fork_req.new_terminal_id != None
         return fork_req.new_terminal_id

@@ -15,6 +15,7 @@ export LOCAL_RESURRECT_PATH="${LOCAL_RESURRECT_PATH:-$SCRIPT_DIR/tmux-res}"
 export FLASK_PORT="${FLASK_PORT:-9901}"
 export ENV_BENCH="${ENV_BENCH:-0}"
 export ENABLE_CACHING="${ENABLE_CACHING:-1}"
+export NUM_BRIDGE_NETWORKS="${NUM_BRIDGE_NETWORKS:-10}"
 
 # ---- Run the server ----
 uv run server.py

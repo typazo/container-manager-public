@@ -60,7 +60,8 @@ enable_caching = os.getenv("ENABLE_CACHING", "0") == "1"
 enable_hashing = False
 
 start_semaphore = threading.Semaphore(20)
-bridge_networks = BridgeNetworks(100)
+NUM_BRIDGE_NETWORKS = int(os.getenv("NUM_BRIDGE_NETWORKS", "10"))
+bridge_networks = BridgeNetworks(NUM_BRIDGE_NETWORKS)
 
 fork_pipeline = ForkPipeline(
     terminals=terminals,
